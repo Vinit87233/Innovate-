@@ -1,0 +1,43 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import QRCode from 'qrcode.react';
+
+function App() {
+  const [userId, setUserId] = useState('');
+  const [eventId, setEventId] = useState('');
+  const [qrCode, setQRCode] = useState('');
+  const [attendanceData, setAttendanceData] = useState({});
+
+  useEffect(() => {
+    axios.post('/generate-qrcode', { userId, eventId })
+      .then(response => {
+        setQRCode(response.data);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }, [userId, eventId]);
+
+  const handleScan = () => {
+    axios.post('/mark-attendance', { userId, eventId })
+      .then(response => {
+        setAttendanceData(response.data);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
+  return (
+    <div>
+      <h1>QRCodeAttend</h1>
+      <input type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
+      <input type="text" value={eventId} onChange={e => setEventId(e.target.value)} placeholder="Event ID" />
+      <QRCode value={qrCode} />
+      <button onClick={handleScan}>Scan QR Code</button>
+      <p>Attendance Data: {attendanceData.timestamp}</p>
+    </div>
+  );
+}
+
+export default App;
